@@ -5,9 +5,9 @@ namespace OfficeReportForm
     public partial class Form1 : Form
     {
         private readonly List<Person> PersonList = new();
-        private readonly static String INVALID_NAME = "Entered name is invalid.";
+        private readonly static String INVALID_NAME = "Entered name is invalid, cannot contain numbers, spaces, punctuation.";
         private readonly static String INVALID_OFFICE = "Entered office # invalid, cannot contain spaces.";
-        private readonly static String INVALID_TELEPHONE = "Entered telephone # invalid, must be in the format 000-000-0000";
+        private readonly static String INVALID_TELEPHONE = "Entered telephone # invalid, must be in the format 000-000-0000.";
 
         public Form1() { InitializeComponent(); }
 
