@@ -5,6 +5,9 @@ namespace OfficeReportForm
     public partial class Form1 : Form
     {
         private readonly List<Person> PersonList = new();
+        private readonly static String INVALID_NAME = "Entered name is invalid.";
+        private readonly static String INVALID_OFFICE = "Entered office # invalid, cannot contain spaces.";
+        private readonly static String INVALID_TELEPHONE = "Entered telephone # invalid, must be in the format 000-000-0000";
 
         public Form1() { InitializeComponent(); }
 
@@ -41,7 +44,7 @@ namespace OfficeReportForm
                 if (!IsValidName(name))
                 {
                     OutputListView.HeaderStyle = ColumnHeaderStyle.None;
-                    OutputListView.Items.Add("Invalid name.");
+                    OutputListView.Items.Add(INVALID_NAME);
                 }
                 else if (SearchName(name) != -1)
                 {
@@ -52,7 +55,7 @@ namespace OfficeReportForm
                 else
                 {
                     OutputListView.HeaderStyle = ColumnHeaderStyle.None;
-                    OutputListView.Items.Add("Name " + name + " not found.");
+                    OutputListView.Items.Add("Entry with entered name not found");
                 }
             }
             else if (radioSearchOffice.Checked) SearchOffice();
@@ -64,11 +67,7 @@ namespace OfficeReportForm
                 OutputListView.HeaderStyle = ColumnHeaderStyle.None;
                 OutputListView.Items.Add("List successfully sorted by name.");
             }
-            else if (radioQuit.Checked)
-            {
-                WriteFile();
-                Application.Exit();
-            }
+            else if (radioRemoveEntry.Checked) RemoveEntry();
 
             if (radio != null && radio.Checked)
             {
@@ -154,7 +153,7 @@ namespace OfficeReportForm
             if(!IsValidOffice(office))
             {
                 OutputListView.HeaderStyle = ColumnHeaderStyle.None;
-                OutputListView.Items.Add("Office number not valid: must be in range 000 to 999");
+                OutputListView.Items.Add(INVALID_OFFICE);
                 return;
             }
 
@@ -170,7 +169,7 @@ namespace OfficeReportForm
             if(OutputListView.Items.Count == 0)
             {
                 OutputListView.HeaderStyle = ColumnHeaderStyle.None;
-                OutputListView.Items.Add("Office number " + office + " not found.");
+                OutputListView.Items.Add("Office number not found.");
             }
         }
 
@@ -180,7 +179,7 @@ namespace OfficeReportForm
             if(!IsValidTelephone(tele))
             {
                 OutputListView.HeaderStyle = ColumnHeaderStyle.None;
-                OutputListView.Items.Add("Telephone number not valid: must be in format 000-0000");
+                OutputListView.Items.Add(INVALID_TELEPHONE);
                 return;
             }
 
@@ -196,7 +195,7 @@ namespace OfficeReportForm
             if(OutputListView.Items.Count == 0)
             {
                 OutputListView.HeaderStyle = ColumnHeaderStyle.None;
-                OutputListView.Items.Add("Telephone number " + tele + " not found.");
+                OutputListView.Items.Add(INVALID_TELEPHONE);
             }
         }
 
@@ -208,7 +207,7 @@ namespace OfficeReportForm
             bool valid = true;
             if(!IsValidName(input))
             {
-                OutputListView.Items.Add("Invalid name.");
+                OutputListView.Items.Add(INVALID_NAME);
                 valid = false;
             }
 
@@ -223,7 +222,7 @@ namespace OfficeReportForm
 
             if(!IsValidOffice(input))
             {
-                OutputListView.Items.Add("Office number not valid: must be in range 000 to 999");
+                OutputListView.Items.Add(INVALID_OFFICE);
                 valid = false;
             }
 
@@ -245,7 +244,7 @@ namespace OfficeReportForm
             bool valid = true;
             if(!IsValidName(name))
             {
-                OutputListView.Items.Add("Invalid name.");
+                OutputListView.Items.Add(INVALID_NAME);
                 valid = false;
             }
 
@@ -257,13 +256,13 @@ namespace OfficeReportForm
 
             if (!IsValidOffice(office))
             {
-                OutputListView.Items.Add("Office number not valid: must be in range 000 to 999");
+                OutputListView.Items.Add(INVALID_OFFICE);
                 valid = false;
             }
 
             if(!IsValidTelephone(tele))
             {
-                OutputListView.Items.Add("Telephone number not valid: must be in format 000-0000");
+                OutputListView.Items.Add(INVALID_TELEPHONE);
                 valid = false;
             }
 
@@ -274,28 +273,48 @@ namespace OfficeReportForm
             }
         }
 
+        private void RemoveEntry() 
+        {
+            OutputListView.HeaderStyle = ColumnHeaderStyle.None;
+
+            string name = NameTextBox.Text.Trim(' ');
+            if(SearchName(name) != -1) 
+            {
+                PersonList.Remove(PersonList[SearchName(name)]);
+                OutputListView.Items.Add("Entry successfully removed.");
+                return;
+            }
+
+            OutputListView.Items.Add("Entry with entered name not found, no entry removed.");
+        }
+
         private static bool IsValidOffice(string office)
         {
-            if (office.Length != 3) return false;
+            if (office.Length < 1) return false;
+            
+            foreach (char c in office) 
+            {
+                if (c == ' ') return false;
+            }
 
-            return Int32.TryParse(office, out _);
+            return true;
         }
 
         private static bool IsValidTelephone(string tele) 
         {
-            if (tele.Length != 8 || tele[3] != '-') return false;
+            if (tele.Length != 12 || tele[3] != '-' || tele[7] != '-') return false;
 
-            return Int32.TryParse(tele[..3], out _) && Int32.TryParse(tele[4..], out _);
+            return Int32.TryParse(tele.Substring(0, 3), out _) && 
+            Int32.TryParse(tele.Substring(4, 3), out _) && Int32.TryParse(tele.Substring(8, 4), out _);
         }
 
         private static bool IsValidName(string name)
         {
-            if (name.Length < 1 || name.Length > 14) return false;
+            if (name.Length < 1) return false;
 
             foreach (char c in name)
             {
-                if (Char.IsNumber(c) || c == ' ' || (Char.IsPunctuation(c) && c != '-'))
-                    return false;
+                if (Char.IsNumber(c) || c == ' ' || (Char.IsPunctuation(c) && c != '-')) return false;
             }
 
             return true;
